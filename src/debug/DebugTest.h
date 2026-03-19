@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
-#include "Config.h"
-#include "Debug.h"
+#include "config/Config.h"
+#include "debug/Debug.h"
 
 /**
  * Narzędzia pomocnicze do testów / diagnostyki.

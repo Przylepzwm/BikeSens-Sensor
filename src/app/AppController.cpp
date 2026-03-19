@@ -20,14 +20,14 @@
 #include <Arduino.h>
 #include <esp_system.h>
 
-#include "AppController.h"
-#include "BatteryMonitor.h"
-#include "BleAdvComm.h"
-#include "Config.h"
-#include "Debug.h"
-#include "DebugTest.h"
-#include "IsrTrace.h"
-#include "SleepManager.h"
+#include "app/AppController.h"
+#include "platform/BatteryMonitor.h"
+#include "comm/BleAdvComm.h"
+#include "config/Config.h"
+#include "debug/Debug.h"
+#include "debug/DebugTest.h"
+#include "debug/IsrTrace.h"
+#include "platform/SleepManager.h"
 
 namespace {
 

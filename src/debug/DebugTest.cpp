@@ -1,4 +1,4 @@
-#include "DebugTest.h"
+#include "debug/DebugTest.h"
 
 #if DEBUG_SERIAL
 
@@ -25,5 +25,4 @@ uint32_t DebugTest_getTestPulses() {
 }
 
 #endif
-
 

@@ -5,7 +5,7 @@
   - setup() oraz loop() są tylko przekierowaniem do AppController.
   - cała logika jest podzielona na moduły w *.cpp/*.h.
 */
-#include "AppController.h"
+#include "src/app/AppController.h"
 
 void setup() { appSetup(); }
 void loop()  { appLoop(); }

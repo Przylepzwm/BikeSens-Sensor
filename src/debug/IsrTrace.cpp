@@ -1,5 +1,5 @@
-#include "IsrTrace.h"
-#include "Config.h"
+#include "debug/IsrTrace.h"
+#include "config/Config.h"
 
 volatile uint32_t g_isr_event_bits = 0;
 

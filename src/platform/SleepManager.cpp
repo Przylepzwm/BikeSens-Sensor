@@ -1,5 +1,5 @@
-#include "SleepManager.h"
-#include "Config.h"
+#include "platform/SleepManager.h"
+#include "config/Config.h"
 
 void SleepManager::configureHallWake(gpio_num_t pin, bool activeLow) {
   // Konfiguracja pinu jako wejście + odpowiednie podciąganie
