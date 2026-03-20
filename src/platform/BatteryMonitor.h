@@ -22,9 +22,6 @@ public:
    */
   uint8_t percentFromMilliVolts(uint16_t vbat_mV, uint16_t empty_mV, uint16_t full_mV) const;
 
-  /** Flagi: bit0 = warn, bit1 = crit (na podstawie progów mV). */
-  uint8_t makeFlags(uint16_t vbat_mV, uint16_t warn_mV, uint16_t crit_mV) const;
-
 private:
   int _adcPin;
   float _r1, _r2;

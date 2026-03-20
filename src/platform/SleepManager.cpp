@@ -1,5 +1,5 @@
-#include "platform/SleepManager.h"
-#include "config/Config.h"
+#include "SleepManager.h"
+#include "../config/Config.h"
 
 void SleepManager::configureHallWake(gpio_num_t pin, bool activeLow) {
   // Konfiguracja pinu jako wejście + odpowiednie podciąganie
@@ -20,17 +20,16 @@ void SleepManager::configureHallWake(gpio_num_t pin, bool activeLow) {
   } else {
     gpio_pulldown_en(pin);
   }
-//--------
+
   // Włącz wybudzanie z deep sleep na poziomie GPIO (ESP32-C3)
   esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 
-  // --- Anti-auto-wake: jeśli magnes już trzyma stan aktywny, to uzbrój wybudzanie na "zwolnienie" ---
+  // Jeśli magnes trzyma już stan aktywny, uzbrajamy wake-up na "zwolnienie",
+  // żeby uniknąć natychmiastowego wybudzenia zaraz po wejściu w sen.
   const int levelNow = gpio_get_level(pin);
-
-  const int activeLevel   = activeLow ? 0 : 1;
+  const int activeLevel = activeLow ? 0 : 1;
   const int inactiveLevel = activeLow ? 1 : 0;
 
-  // Jeśli aktualnie jest stan aktywny -> czekaj aż przejdzie w nieaktywny (żeby nie obudziło od razu po uśpieniu)
   const int wakeLevel = (levelNow == activeLevel) ? inactiveLevel : activeLevel;
 
   const uint64_t mask = 1ULL << (uint8_t)pin;
@@ -38,7 +37,6 @@ void SleepManager::configureHallWake(gpio_num_t pin, bool activeLow) {
     mask,
     wakeLevel == 0 ? ESP_GPIO_WAKEUP_GPIO_LOW : ESP_GPIO_WAKEUP_GPIO_HIGH
   );
-//--------
 }
 
 void SleepManager::enterDeepSleep() {

@@ -20,14 +20,12 @@
 #include <Arduino.h>
 #include <esp_system.h>
 
-#include "app/AppController.h"
-#include "platform/BatteryMonitor.h"
-#include "comm/BleAdvComm.h"
-#include "config/Config.h"
-#include "debug/Debug.h"
-#include "debug/DebugTest.h"
-#include "debug/IsrTrace.h"
-#include "platform/SleepManager.h"
+#include "AppController.h"
+#include "../platform/BatteryMonitor.h"
+#include "../comm/BleAdvComm.h"
+#include "../config/Config.h"
+#include "../debug/Debug.h"
+#include "../platform/SleepManager.h"
 
 namespace {
 
@@ -67,7 +65,7 @@ static uint16_t g_deviceId16 = 0;
 static void IRAM_ATTR onHallEdge() {
   // Liczymy pełny impuls ON->OFF, filtrując zbyt krótkie / zbyt długie stany
   // oraz impulsy pojawiające się zbyt szybko po poprzednim zaakceptowanym.
-  static uint32_t t_on_us = 0;
+  static uint32_t pulse_start_us = 0;
   static uint32_t last_accept_us = 0;
   static bool armed = false;
 
@@ -81,62 +79,42 @@ static void IRAM_ATTR onHallEdge() {
   const int active_level = HALL_WAKE_ACTIVE_LOW ? 0 : 1;
   const int inactive_level = 1 - active_level;
 
-  if (armed && (uint32_t)(now_us - t_on_us) > max_width_us) {
+  if (armed && (uint32_t)(now_us - pulse_start_us) > max_width_us) {
     armed = false;
-    g_isr_event_bits |= EVT_TIMEOUT_CANCEL;
-    g_isr_cnt_timeout_cancel++;
   }
 
   if (level == active_level) {
     if ((uint32_t)(now_us - last_accept_us) < min_gap_us) {
-      g_isr_event_bits |= EVT_DROP_MIN_GAP;
-      g_isr_cnt_drop_min_gap++;
       return;
     }
     if (armed) {
-      g_isr_event_bits |= EVT_DROP_ON_WHILE_ARMED;
-      g_isr_cnt_drop_on_while_armed++;
       return;
     }
 
-    t_on_us = now_us;
+    pulse_start_us = now_us;
     armed = true;
-    g_isr_event_bits |= EVT_ON_ARMED;
-    g_isr_cnt_on_armed++;
     return;
   }
 
   if (level != inactive_level) return;
 
   if (!armed) {
-    g_isr_event_bits |= EVT_OFF_NO_ARM;
-    g_isr_cnt_off_no_arm++;
     return;
   }
 
-  const uint32_t width_us = (uint32_t)(now_us - t_on_us);
+  const uint32_t width_us = (uint32_t)(now_us - pulse_start_us);
   armed = false;
 
   if (width_us < min_width_us) {
-    g_isr_event_bits |= EVT_DROP_MIN_WIDTH;
-    g_isr_cnt_drop_min_width++;
     return;
   }
   if (width_us > max_width_us) {
-    g_isr_event_bits |= EVT_DROP_MAX_WIDTH;
-    g_isr_cnt_drop_max_width++;
     return;
   }
 
   if (g_hall_pulses != 0xFFFF) {
     g_hall_pulses++;
-    g_isr_last_pulse_value = g_hall_pulses;
   }
-  g_isr_last_width_us = width_us;
-
-  g_isr_event_bits |= EVT_PULSE_ACCEPTED;
-  g_isr_cnt_pulse_accepted++;
-  g_isr_total_accepted++;
 
   last_accept_us = now_us;
 }
@@ -168,10 +146,12 @@ static uint16_t makeDeviceId16() {
 
 static void goDeepSleepNow() {
 #if DEBUG_SERIAL
-  DBGF("Dobranoc \n");
+  DBG("Dobranoc");
+  if (LED_ENABLED) {
   digitalWrite(LED_PIN, HIGH);
   delay(80);
   digitalWrite(LED_PIN, LOW);
+  }
 #endif
 
   g_ble.stop();
@@ -196,7 +176,7 @@ static void startWindow(uint16_t initialPulses) {
   g_window.pulses = initialPulses;
   g_window.end_ms = millis() + WINDOW_MS;
 
-  DBGF("Window started \n");
+  DBGF("Window started, pulses=%u\n", g_window.pulses);
   measureBatteryOnceOrSleep();
 
   g_idle_deadline_ms = 0;
@@ -213,7 +193,7 @@ static void beginCommForTelegram(const BleTelegram& telegram) {
 }
 
 static void endWindowAndScheduleComm() {
-  DBG("Window ended \n");
+  DBG("Window ended");
   DBGF("Pulses in window: %u\n", g_window.pulses);
 
   BleTelegram telegram{};
@@ -260,8 +240,8 @@ static void commStep() {
   if (g_comm.repeats_left == 0) {
     g_comm.active = false;
 
-    DBG("BLE telegram sent \n");
-    DBGF("SEQ=%u device=0x%04X pulses=%u batt=%u%% \n",
+    DBG("BLE telegram sent");
+    DBGF("SEQ=%u device=0x%04X pulses=%u batt=%u%%\n",
          g_comm.telegram.seq,
          g_comm.telegram.device_id,
          g_comm.telegram.pulses_in_window,
@@ -302,9 +282,11 @@ void appSetup() {
   DBGF("Reset reason: %d\n", (int)esp_reset_reason());
   DBGF("Hall state at boot: %d\n", digitalRead((int)GPIO_HALL_WAKE));
 
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW);
-  delay(200);
+  if (LED_ENABLED) {
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, LOW);
+    delay(200);
+  }
 #endif
 
   SleepManager::configureHallWake(GPIO_HALL_WAKE, HALL_WAKE_ACTIVE_LOW);
@@ -328,6 +310,7 @@ void appLoop() {
     if (g_window.active) {
       const uint32_t sum = (uint32_t)g_window.pulses + newPulses;
       g_window.pulses = (sum > 0xFFFF) ? 0xFFFF : (uint16_t)sum;
+      DBGF("Pulses=%u\n", g_window.pulses);
     } else {
       startWindow(newPulses);
     }
@@ -346,8 +329,6 @@ void appLoop() {
   }
 
 #if DEBUG_SERIAL
-  DebugTest_updateHallEdgeMonitor(g_window.active);
-  dumpIsrTrace();
 #endif
 
   delay(1);

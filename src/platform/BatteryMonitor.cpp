@@ -1,4 +1,4 @@
-#include "platform/BatteryMonitor.h"
+#include "BatteryMonitor.h"
 
 #if defined(ARDUINO_ARCH_ESP32)
   #include <driver/gpio.h>
@@ -56,12 +56,5 @@ uint8_t BatteryMonitor::percentFromMilliVolts(uint16_t vbat_mV, uint16_t empty_m
 
   const uint32_t num = (uint32_t)(vbat_mV - empty_mV) * 100UL;
   const uint32_t den = (uint32_t)(full_mV - empty_mV);
-  return (uint8_t)((num + den/2) / den);
-}
-
-uint8_t BatteryMonitor::makeFlags(uint16_t vbat_mV, uint16_t warn_mV, uint16_t crit_mV) const {
-  uint8_t f = 0;
-  if (vbat_mV < warn_mV) f |= 0x01;
-  if (vbat_mV < crit_mV) f |= 0x02;
-  return f;
+  return (uint8_t)((num + den / 2) / den);
 }

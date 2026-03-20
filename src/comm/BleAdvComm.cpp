@@ -1,4 +1,4 @@
-#include "comm/BleAdvComm.h"
+#include "BleAdvComm.h"
 
 void BleAdvComm::begin(uint16_t deviceId16) {
   if (_inited) return;
@@ -7,7 +7,7 @@ void BleAdvComm::begin(uint16_t deviceId16) {
   snprintf(name, sizeof(name), "BS-%04X", deviceId16);
 
   NimBLEDevice::init(name);
-  NimBLEDevice::setPower(ESP_PWR_LVL_N0);
+  NimBLEDevice::setPower(ESP_PWR_LVL_P9);
 
   _adv = NimBLEDevice::getAdvertising();
   _adv->setMinInterval(BLE_ADV_MIN_INTERVAL);

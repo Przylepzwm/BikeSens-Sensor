@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include "config/Config.h"
+#include "../config/Config.h"
 
 // NimBLE-Arduino (h2zero)
 #include <NimBLEDevice.h>

@@ -11,6 +11,7 @@
 static constexpr gpio_num_t GPIO_HALL_WAKE = GPIO_NUM_4;
 static constexpr bool HALL_WAKE_ACTIVE_LOW = true;   // Hall pulls LOW on magnet
 #define LED_PIN 8
+static constexpr bool LED_ENABLED = false;
 
 // Minimalny odstęp czasu między zliczanymi zboczami Halla (debounce / filtr szumu)
 static constexpr uint32_t HALL_DEBOUNCE_US = 10000; // 5 ms
@@ -33,7 +34,7 @@ static_assert((int)DIVIDER_R2_OHMS == 100000, "Config sanity: expected R2=100k")
 
 // -------------- Serial / boot -------------------
 // Minimalny delay na start UART (jeśli w ogóle używasz Serial w buildzie testowym)
-#define DEBUG_SERIAL 1
+#define DEBUG_SERIAL 0
 static constexpr uint8_t SERIAL_BOOT_DELAY_MS = 5;
 
 // -------------- Battery thresholds --------------
@@ -46,14 +47,14 @@ static constexpr uint16_t VBAT_EMPTY_MV = 3300;
 static constexpr uint16_t VBAT_FULL_MV  = 4200;
 
 // -------------- ADC sampling --------------------
-static constexpr uint8_t  ADC_SAMPLES = 12;
+static constexpr uint8_t  ADC_SAMPLES = 10;
 static constexpr uint8_t  ADC_SAMPLE_DELAY_MS = 3;
 
 // -------------- Window logic --------------------
 // Measurement/counting window length
 static constexpr uint32_t WINDOW_MS = 60UL * 1000UL; //60->10->60
 // If no new window starts within this time after comm ends -> deep sleep
-static constexpr uint32_t NEXT_WINDOW_TIMEOUT_MS = 1UL * 4UL * 1000UL; //60->10->8->4
+static constexpr uint32_t NEXT_WINDOW_TIMEOUT_MS = 2500UL; //60->10->8->4->2.5
 
 // -------------- BLE "komunikacja" --------------
 // Number of advertising "shots" per window report

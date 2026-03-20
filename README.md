@@ -58,7 +58,7 @@ Kod źródłowy jest podzielony na warstwy:
 - `src/platform`
   - obsługa deep sleep, wake-up i pomiaru baterii
 - `src/debug`
-  - narzędzia diagnostyczne i śledzenie ISR
+  - proste logowanie debugowe przez `Serial`
 - `src/config`
   - konfiguracja sprzętu i parametrów czasowych
 
@@ -68,7 +68,6 @@ Najważniejsze pliki:
 - [src/comm/BleAdvComm.cpp](/Users/przemyslawkurantowicz/Library/Mobile%20Documents/com~apple~CloudDocs/Dokumenty/BikeSens/05%20Software/Sensors/BikeSensSensor/src/comm/BleAdvComm.cpp) - warstwa BLE advertising
 - [src/platform/SleepManager.cpp](/Users/przemyslawkurantowicz/Library/Mobile%20Documents/com~apple~CloudDocs/Dokumenty/BikeSens/05%20Software/Sensors/BikeSensSensor/src/platform/SleepManager.cpp) - usypianie i konfiguracja wybudzania
 - [src/platform/BatteryMonitor.cpp](/Users/przemyslawkurantowicz/Library/Mobile%20Documents/com~apple~CloudDocs/Dokumenty/BikeSens/05%20Software/Sensors/BikeSensSensor/src/platform/BatteryMonitor.cpp) - pomiar napięcia baterii
-- [src/debug/IsrTrace.cpp](/Users/przemyslawkurantowicz/Library/Mobile%20Documents/com~apple~CloudDocs/Dokumenty/BikeSens/05%20Software/Sensors/BikeSensSensor/src/debug/IsrTrace.cpp) - diagnostyka pracy ISR
 - [src/config/Config.h](/Users/przemyslawkurantowicz/Library/Mobile%20Documents/com~apple~CloudDocs/Dokumenty/BikeSens/05%20Software/Sensors/BikeSensSensor/src/config/Config.h) - konfiguracja projektu
 
 ## Konfiguracja
@@ -93,8 +92,7 @@ Debugowanie szeregowe jest sterowane przez `DEBUG_SERIAL`.
 Gdy `DEBUG_SERIAL == 1`:
 
 - aktywowany jest `Serial`,
-- dostępne są logi startu, okna i transmisji BLE,
-- działają moduły diagnostyczne z `src/debug`,
+- dostępne są logi startu, aktualnego zliczenia, zakończenia okna i transmisji BLE,
 - niski poziom baterii nie zatrzymuje pracy urządzenia.
 
 Gdy `DEBUG_SERIAL == 0`:
@@ -105,4 +103,4 @@ Gdy `DEBUG_SERIAL == 0`:
 
 ## Status
 
-README opisuje aktualną strukturę repozytorium po refactorze katalogów do układu `src/app`, `src/comm`, `src/platform`, `src/debug`, `src/config`.
+README opisuje aktualną strukturę repozytorium i bieżące założenia działania sensora.
